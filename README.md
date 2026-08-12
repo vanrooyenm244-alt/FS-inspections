@@ -70,6 +70,47 @@ anywhere and it is not backed up. Consequences worth knowing:
 - Nothing syncs between phones. Each phone has its own jobs and its own clause library.
 - Export each job to PDF when you finish it. Treat the PDF as the record, not the app.
 
+## Timesheets — connecting the sheet
+
+One-time setup, done on a computer:
+
+1. Open the Google Sheet on the work account.
+2. Extensions → Apps Script. Delete whatever is there, paste in all of `Code.gs`.
+3. Change `SHARED_PASSWORD` at the top to something your team will remember.
+4. Run → pick `setup` → Run. Approve the permission prompts. It builds the
+   Timesheets, Workers and Log tabs and seeds the five names.
+5. Deploy → New deployment → Web app.
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+6. Copy the `/exec` URL.
+
+Then on each phone: open the app → Settings → paste the URL, the password, and
+the name of whoever uses that phone → Save and test. It should report how many
+workers it found.
+
+**"Anyone" sounds alarming but is required** — the phones are not signed into
+Google, so the script has to accept anonymous requests. The password is the only
+thing in front of it. Treat the URL like a password: don't post it anywhere public.
+
+### How hours are worked out
+
+- Normal day 07:00–17:00, less lunch (30 min default, editable per person)
+- Started before 06:00 → those minutes count as overtime
+- Arrived between 06:00 and 07:00 → the real time is recorded, but it counts as
+  normal. People come in early; that isn't overtime.
+- Worked past 17:00 → overtime
+- Saturday and Sunday → every hour is overtime, no normal hours
+
+The app deliberately does **not** apply 1.5x or 2x. It writes a `Day Type` column
+(Weekday / Saturday / Sunday) and leaves the rate maths to a formula in the sheet,
+where you can see it and check it. Getting a pay multiplier wrong inside app code
+is the kind of error nobody notices for months.
+
+### No signal
+
+Hours are queued on the phone if the send fails, and go through automatically next
+time the app is opened with signal. The Timesheets screen shows how many are waiting.
+
 ## The clause library
 
 The seeded entries deliberately have **blank clause numbers**. They point you at the
