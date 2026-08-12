@@ -77,6 +77,54 @@ body{background:var(--slate);color:var(--ink);
 .pick button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .pick button.new{border-style:dashed;color:var(--muted)}
 
+.cyc{display:flex;align-items:center;gap:10px;margin:4px 0 2px}
+.cycbtn{flex:0 0 auto;border:1px solid var(--rule);background:#fff;color:var(--navy);border-radius:9px;
+  width:42px;height:42px;font:inherit;font-size:20px;font-weight:700;cursor:pointer;line-height:1}
+.cycbtn:active{background:#EEF2F6}
+.cyclab{flex:1;text-align:center;font-size:15px;font-weight:700;color:var(--navy)}
+
+.per{border:1px solid var(--rule);border-radius:11px;margin-bottom:9px;overflow:hidden;background:#fff}
+.per>.hd{display:flex;align-items:center;gap:11px;padding:13px 14px;cursor:pointer;background:#F7F9FB;
+  border:0;width:100%;font:inherit;text-align:left}
+.per>.hd:active{background:#EDF2F7}
+.per>.hd .nm{flex:1;font-size:16px;font-weight:700;color:var(--navy)}
+.per>.hd .sm{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.per>.hd .cv{color:#8A929B;font-size:15px;transition:transform .15s}
+.per.open>.hd .cv{transform:rotate(90deg)}
+.per.dirty>.hd .nm::after{content:'•';color:var(--red);margin-left:7px}
+.per>.bd{display:none;padding:4px 10px 12px}
+.per.open>.bd{display:block}
+
+.wk{display:flex;align-items:center;gap:9px;padding:9px 4px 5px;margin-top:4px}
+.wk .lb{flex:1;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.wk button{border:1px solid var(--rule);background:#fff;color:var(--navy);border-radius:7px;
+  padding:6px 11px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+
+.dy{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:8px 4px;border-top:1px solid #EDF1F4;align-items:start}
+.dy.we{background:#FBF7EF}
+.dy .dt{padding-top:7px}
+.dy .dt .dn{font-size:15px;font-weight:700;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums}
+.dy .dt .dw{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.dy.we .dt .dw{color:var(--red);font-weight:700}
+.dy .fl{min-width:0}
+.dy .on2{display:grid;grid-template-columns:1fr 1fr 66px;gap:6px}
+.dy input[type=time],.dy input[type=number],.dy .jn,.dy .nt2{width:100%;border:1px solid var(--rule);
+  border-radius:7px;padding:9px 7px;font:inherit;font-size:15px;outline:none;background:#fff}
+.dy input:focus{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy)}
+.dy .ln2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.dy .add2{width:100%;border:1px dashed var(--rule);background:#FBFCFD;color:var(--muted);border-radius:7px;
+  padding:9px;font:inherit;font-size:13px;cursor:pointer;text-align:left}
+.dy .add2:active{background:#F1F5F9}
+.dy .sum{font-size:12px;color:var(--navy);margin-top:6px;line-height:1.45}
+.dy .sum .ot{color:var(--red);font-weight:700}
+.dy .sum .clr{border:0;background:none;color:var(--red);font:inherit;font-size:12px;font-weight:600;
+  cursor:pointer;padding:0;margin-left:8px}
+.dy .sum.bad{color:var(--red)}
+
+.tot{margin-top:12px;padding:11px 13px;border-radius:9px;background:#EEF4FA;color:var(--navy);font-size:13.5px;line-height:1.6}
+.tot b{font-variant-numeric:tabular-nums}
+.tot .ot{color:var(--red)}
+
 .setrow{margin:11px 0}
 .setrow label{display:block;font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:4px}
 .setrow input{width:100%;border:1px solid var(--rule);border-radius:8px;padding:11px;
@@ -281,17 +329,20 @@ ul.scope li{margin:3px 0;font-size:15px}
 <div class="wrap hidden" id="screenTime">
   <div id="tsWarn"></div>
   <section class="sheet">
-    <div class="sheet-head"><h2>Timesheet</h2><span class="tag" id="tsDayTag"></span></div>
-    <div class="tgrid">
-      <div class="wide"><label for="tsDate">Date</label><input type="date" id="tsDate"></div>
-      <div class="wide"><label for="tsJob">Job / site</label><input id="tsJob" placeholder="e.g. 15 Folkestone Street"></div>
+    <div class="sheet-head"><h2>Timesheet</h2><span class="tag" id="tsCycleTag"></span></div>
+    <div class="cyc">
+      <button class="cycbtn" id="cycPrev" type="button">‹</button>
+      <div class="cyclab" id="cycLab"></div>
+      <button class="cycbtn" id="cycNext" type="button">›</button>
     </div>
-    <h3 style="margin-top:18px">Who worked?</h3>
-    <div class="pick" id="tsPick"></div>
-    <div id="tsRows" style="margin-top:14px"></div>
+    <p class="hint">Pay cycle runs 25th to 24th. Tap a name to open their days, tap again to close.</p>
+    <div id="tsPeople"></div>
+    <div class="pick" style="margin-top:14px">
+      <button type="button" class="new" id="tsAddWorker">+ New worker</button>
+    </div>
   </section>
-  <button class="btn" id="tsSend" type="button" style="width:100%;padding:16px">Send to sheet</button>
   <div id="tsQueue"></div>
+  <button class="btn" id="tsSend" type="button" style="width:100%;padding:16px">Send to sheet</button>
 </div>
 
 <!-- ================= SETTINGS ================= -->
@@ -913,13 +964,43 @@ function fetchWorkers(){
 }
 
 /* ============ timesheets ============ */
-var WORKERS=[], TSPICK=[];
+/* Pay cycle runs the 25th of one month to the 24th of the next.
+   Entries are held on this phone per cycle, so a month can be typed
+   in over several sittings, then sent in one go. */
 
-function todayISO(){
-  var d=new Date();
+var WORKERS=[], CYCLE=null, ENTRIES={}, OPEN=null;
+
+var DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function iso(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
-var DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* The cycle containing a given date. Cycle is named by its END month. */
+function cycleFor(d){
+  var y=d.getFullYear(), m=d.getMonth();
+  if(d.getDate()<25){ return {y:y,m:m}; }        // 1-24 -> ends this month
+  m++; if(m>11){ m=0; y++; }                      // 25+  -> ends next month
+  return {y:y,m:m};
+}
+function cycleDays(c){
+  var end=new Date(c.y,c.m,24);
+  var start=new Date(c.y,c.m-1,25);              // JS rolls the year over for us
+  var days=[], d=new Date(start);
+  while(d<=end){ days.push(new Date(d)); d.setDate(d.getDate()+1); }
+  return days;
+}
+function cycleKey(c){ return c.y+'-'+String(c.m+1).padStart(2,'0'); }
+function cycleLabel(c){
+  var s=new Date(c.y,c.m-1,25), e=new Date(c.y,c.m,24);
+  return '25 '+MONTHS[s.getMonth()].slice(0,3)+' — 24 '+MONTHS[e.getMonth()].slice(0,3)+' '+e.getFullYear();
+}
+function shiftCycle(c,n){
+  var m=c.m+n, y=c.y;
+  while(m>11){ m-=12; y++; } while(m<0){ m+=12; y--; }
+  return {y:y,m:m};
+}
 
 function mins(hhmm){
   if(!hhmm) return null;
@@ -929,21 +1010,19 @@ function mins(hhmm){
   return a*60+b;
 }
 
-/* Mirrors calc_() in Code.gs. The sheet recalculates on arrival — this
-   is only so the person can see the numbers before sending. */
+/* Mirrors calc_() in Code.gs — shown on screen so a mistyped time is
+   caught before it reaches the sheet. The sheet recalculates anyway. */
 function calcShift(dateStr,inStr,outStr,lunchMin){
   var d=new Date(dateStr+'T00:00:00');
   if(isNaN(d)) return null;
-  var dayType = d.getDay()===0?'Sunday':(d.getDay()===6?'Saturday':'Weekday');
+  var dayType=d.getDay()===0?'Sunday':(d.getDay()===6?'Saturday':'Weekday');
   var a=mins(inStr), b=mins(outStr);
   if(a===null||b===null) return null;
   if(b<a) b+=1440;
   var lunch=Number(lunchMin); if(isNaN(lunch)||lunch<0) lunch=30;
   var normal=0, ot=0;
   if(dayType==='Weekday'){
-    var early=(a<360)?(360-a):0;
-    var late=(b>1020)?(b-1020):0;
-    ot=early+late;
+    ot=((a<360)?(360-a):0)+((b>1020)?(b-1020):0);
     normal=Math.max(0, Math.min(b,1020)-Math.max(a,360))-lunch;
     if(normal<0) normal=0;
   } else {
@@ -956,116 +1035,213 @@ function calcShift(dateStr,inStr,outStr,lunchMin){
 
 function hm(h){
   var t=Math.round(h*60), H=Math.floor(t/60), M=t%60;
-  if(!H) return M+' min';
+  if(!H) return M+'m';
   return H+'h'+(M?' '+M+'m':'');
 }
 
+/* ---- storage of in-progress entries ---- */
+function entKey(){ return 'ts-'+cycleKey(CYCLE); }
+function loadEntries(){
+  return get1('cfg',entKey()).then(function(e){ ENTRIES=(e&&e.data)||{}; })
+    .catch(function(){ ENTRIES={}; });
+}
+var entTimer=null;
+function saveEntries(){
+  clearTimeout(entTimer);
+  entTimer=setTimeout(function(){
+    put('cfg',{id:entKey(),data:ENTRIES}).catch(function(){});
+  },500);
+}
+
+/* ---- screen ---- */
 function showTime(){
   backTo='screenHome';
   document.getElementById('savedTag').textContent='timesheet';
   document.getElementById('barCount').textContent='—';
-  var dt=document.getElementById('tsDate');
-  if(!dt.value) dt.value=todayISO();
-  stampDay();
+  if(!CYCLE) CYCLE=cycleFor(new Date());
   show('screenTime');
 
-  var warn=document.getElementById('tsWarn');
-  warn.innerHTML = CFG.url ? '' :
+  document.getElementById('tsWarn').innerHTML = CFG.url ? '' :
     '<div class="queued"><b>No sheet connected yet.</b> Open Settings and paste the web app URL, otherwise hours can only be queued, not sent.</div>';
 
-  get1('cfg','workers').then(function(c){
+  loadEntries().then(function(){
+    return get1('cfg','workers');
+  }).then(function(c){
     WORKERS=(c&&c.list)||[];
-    renderPick();
-    if(CFG.url) fetchWorkers().then(renderPick).catch(function(){});
+    renderCycle();
+    if(CFG.url) fetchWorkers().then(function(){ renderCycle(); }).catch(function(){});
   });
   renderQueue();
 }
 
-function stampDay(){
-  var v=document.getElementById('tsDate').value;
-  var tag=document.getElementById('tsDayTag');
-  if(!v){ tag.textContent=''; return; }
-  var d=new Date(v+'T00:00:00');
-  var name=DAYNAMES[d.getDay()];
-  tag.textContent = (d.getDay()===0||d.getDay()===6) ? name+' — all overtime' : name;
+function renderCycle(){
+  document.getElementById('cycLab').textContent=cycleLabel(CYCLE);
+  document.getElementById('cycCount');
+  var tag=document.getElementById('cycCycleTag')||document.getElementById('tsCycleTag');
+  if(tag) tag.textContent='Pay cycle';
+  renderPeople();
 }
-document.getElementById('tsDate').addEventListener('change',function(){
-  stampDay();
-  document.querySelectorAll('#tsRows .tsrow').forEach(recalcRow);
+
+document.getElementById('cycPrev').addEventListener('click',function(){
+  CYCLE=shiftCycle(CYCLE,-1); OPEN=null; loadEntries().then(renderCycle);
+});
+document.getElementById('cycNext').addEventListener('click',function(){
+  CYCLE=shiftCycle(CYCLE,1); OPEN=null; loadEntries().then(renderCycle);
 });
 
-function renderPick(){
-  var box=document.getElementById('tsPick');
-  box.innerHTML='';
-  WORKERS.forEach(function(n){
-    var b=document.createElement('button');
-    b.type='button'; b.textContent=n;
-    if(TSPICK.indexOf(n)>=0) b.className='on';
-    b.addEventListener('click',function(){ toggleWorker(n) });
-    box.appendChild(b);
+function workerTotals(name){
+  var e=ENTRIES[name]||{}, n=0, ot=0, days=0;
+  Object.keys(e).forEach(function(dk){
+    var r=e[dk];
+    if(!r||!r.on) return;
+    var c=calcShift(dk,r.ti,r.to,r.lu);
+    if(!c) return;
+    n+=c.normal; ot+=c.overtime; days++;
   });
-  var add=document.createElement('button');
-  add.type='button'; add.className='new'; add.textContent='+ New worker';
-  add.addEventListener('click',addWorker);
-  box.appendChild(add);
+  return {normal:Math.round(n*100)/100, ot:Math.round(ot*100)/100, days:days};
 }
 
-function toggleWorker(n){
-  var i=TSPICK.indexOf(n);
-  if(i>=0){ TSPICK.splice(i,1); var r=document.querySelector('#tsRows [data-w="'+cssEsc(n)+'"]'); if(r) r.remove(); }
-  else { TSPICK.push(n); document.getElementById('tsRows').appendChild(makeRow(n)); }
-  renderPick();
+function renderPeople(){
+  var box=document.getElementById('tsPeople');
+  box.innerHTML='';
+  if(!WORKERS.length){
+    box.innerHTML='<div class="empty-state" style="color:var(--muted)">No workers yet. Add one below.</div>';
+    return;
+  }
+  WORKERS.forEach(function(name){
+    var t=workerTotals(name);
+    var per=document.createElement('div');
+    per.className='per'+(OPEN===name?' open':'')+(t.days?' dirty':'');
+    per.innerHTML=
+      '<button class="hd" type="button">'+
+        '<span class="nm">'+esc(name)+'</span>'+
+        '<span class="sm">'+(t.days? t.days+'d · '+hm(t.normal)+(t.ot?' +'+hm(t.ot):'') : '—')+'</span>'+
+        '<span class="cv">›</span>'+
+      '</button><div class="bd"></div>';
+    per.querySelector('.hd').addEventListener('click',function(){
+      OPEN = (OPEN===name) ? null : name;
+      renderPeople();
+      if(OPEN===name){
+        var el=document.querySelector('.per.open');
+        if(el) el.scrollIntoView({block:'start',behavior:'smooth'});
+      }
+    });
+    if(OPEN===name) fillDays(per.querySelector('.bd'), name);
+    box.appendChild(per);
+  });
 }
-function cssEsc(s){ return String(s).replace(/"/g,'\\"'); }
 
-function addWorker(){
+function fillDays(bd,name){
+  var days=cycleDays(CYCLE);
+  if(!ENTRIES[name]) ENTRIES[name]={};
+
+  // week fill bar
+  var bar=document.createElement('div');
+  bar.className='wk';
+  bar.innerHTML='<span class="lb">'+days.length+' days</span>'+
+    '<button type="button" data-fill="wd">Fill weekdays 07:00–17:00</button>'+
+    '<button type="button" data-clear="1">Clear all</button>';
+  bar.querySelector('[data-fill]').addEventListener('click',function(){
+    days.forEach(function(d){
+      var g=d.getDay();
+      if(g===0||g===6) return;
+      var k=iso(d);
+      if(!ENTRIES[name][k] || !ENTRIES[name][k].on)
+        ENTRIES[name][k]={on:true,ti:'07:00',to:'17:00',lu:30,job:'',note:''};
+    });
+    saveEntries(); renderPeople();
+  });
+  bar.querySelector('[data-clear]').addEventListener('click',function(){
+    if(!confirm('Clear every day for '+name+' in this cycle?')) return;
+    ENTRIES[name]={}; saveEntries(); renderPeople();
+  });
+  bd.appendChild(bar);
+
+  days.forEach(function(d){
+    var k=iso(d), g=d.getDay(), we=(g===0||g===6);
+    var row=document.createElement('div');
+    row.className='dy'+(we?' we':'');
+    var r=ENTRIES[name][k];
+
+    var left='<div class="dt"><div class="dn">'+d.getDate()+'</div>'+
+      '<div class="dw">'+DAYNAMES[g].slice(0,3)+'</div></div>';
+
+    if(!r||!r.on){
+      row.innerHTML=left+'<div class="fl"><button class="add2" type="button">+ '+
+        DAYNAMES[g]+' '+d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)+
+        (we?' — weekend, all overtime':'')+'</button></div>';
+      row.querySelector('.add2').addEventListener('click',function(){
+        ENTRIES[name][k]={on:true,ti:'07:00',to:'17:00',lu:30,job:'',note:''};
+        saveEntries(); renderPeople();
+      });
+    } else {
+      row.innerHTML=left+
+        '<div class="fl">'+
+          '<div class="on2">'+
+            '<input type="time" class="ti" value="'+esc(r.ti||'')+'">'+
+            '<input type="time" class="to" value="'+esc(r.to||'')+'">'+
+            '<input type="number" class="lu" value="'+(r.lu===undefined?30:r.lu)+'" min="0" step="5" inputmode="numeric" title="Lunch minutes">'+
+          '</div>'+
+          '<div class="ln2">'+
+            '<input class="jn" placeholder="Job / site" value="'+esc(r.job||'')+'">'+
+            '<input class="nt2" placeholder="Note — sick, off, etc." value="'+esc(r.note||'')+'">'+
+          '</div>'+
+          '<div class="sum"></div>'+
+        '</div>';
+
+      var upd=function(){
+        r.ti=row.querySelector('.ti').value;
+        r.to=row.querySelector('.to').value;
+        r.lu=row.querySelector('.lu').value;
+        r.job=row.querySelector('.jn').value;
+        r.note=row.querySelector('.nt2').value;
+        paint();
+        saveEntries();
+      };
+      var paint=function(){
+        var c=calcShift(k,r.ti,r.to,r.lu);
+        var s=row.querySelector('.sum');
+        if(!c){ s.className='sum bad'; s.textContent='Both times needed.'; return; }
+        s.className='sum';
+        var txt='normal <b>'+hm(c.normal)+'</b>';
+        if(c.overtime>0) txt+=' · overtime <b class="ot">'+hm(c.overtime)+'</b>';
+        if(c.dayType!=='Weekday') txt=c.dayType+' — overtime <b class="ot">'+hm(c.overtime)+'</b>';
+        s.innerHTML=txt+'<button class="clr" type="button">Remove</button>';
+        s.querySelector('.clr').addEventListener('click',function(){
+          delete ENTRIES[name][k]; saveEntries(); renderPeople();
+        });
+      };
+      row.querySelectorAll('input').forEach(function(i){ i.addEventListener('input',upd) });
+      paint();
+    }
+    bd.appendChild(row);
+  });
+
+  var t=workerTotals(name);
+  var tot=document.createElement('div');
+  tot.className='tot';
+  tot.innerHTML=esc(name)+' · <b>'+t.days+'</b> days · normal <b>'+hm(t.normal)+
+    '</b> · overtime <b class="ot">'+hm(t.ot)+'</b>';
+  bd.appendChild(tot);
+}
+
+/* ---- workers ---- */
+document.getElementById('tsAddWorker').addEventListener('click',function(){
   var n=prompt('Name of the new worker:');
   if(!n) return;
   n=n.trim(); if(!n) return;
   if(WORKERS.indexOf(n)<0) WORKERS.push(n);
-  renderPick();
-  toggleWorker(n);
   put('cfg',{id:'workers',list:WORKERS});
+  OPEN=n;
+  renderPeople();
   if(CFG.url){
     post({action:'addWorker',name:n}).catch(function(){
-      alert('Added on this phone. It will reach the sheet next time you send hours with signal.');
+      alert('Added on this phone. It will reach the sheet next time you send with signal.');
     });
   }
-}
+});
 
-function makeRow(name){
-  var el=document.createElement('div');
-  el.className='tsrow';
-  el.setAttribute('data-w',name);
-  el.innerHTML=
-    '<div class="who"><b>'+esc(name)+'</b><button class="x" type="button">Remove</button></div>'+
-    '<div class="tgrid">'+
-      '<div><label>Time in</label><input type="time" class="ti" value="07:00"></div>'+
-      '<div><label>Time out</label><input type="time" class="to" value="17:00"></div>'+
-      '<div><label>Lunch (min)</label><input type="number" class="lu" value="30" min="0" step="5" inputmode="numeric"></div>'+
-      '<div><label>Note</label><input class="nt" placeholder="Optional"></div>'+
-    '</div>'+
-    '<div class="calc"></div>';
-  el.querySelector('.x').addEventListener('click',function(){ toggleWorker(name) });
-  el.querySelectorAll('input').forEach(function(i){ i.addEventListener('input',function(){ recalcRow(el) }) });
-  recalcRow(el);
-  return el;
-}
-
-function recalcRow(el){
-  var date=document.getElementById('tsDate').value;
-  var c=calcShift(date, el.querySelector('.ti').value, el.querySelector('.to').value, el.querySelector('.lu').value);
-  var box=el.querySelector('.calc');
-  if(!c){ box.className='calc bad'; box.textContent='Fill in the date and both times.'; return; }
-  box.className='calc';
-  var s=c.day+' · normal <b>'+hm(c.normal)+'</b>';
-  if(c.overtime>0) s+=' · overtime <b class="ot">'+hm(c.overtime)+'</b>';
-  s+=' · total <b>'+hm(c.total)+'</b>';
-  if(c.dayType!=='Weekday') s+='<br>'+c.dayType+' — every hour counts as overtime.';
-  box.innerHTML=s;
-}
-
-/* ---- sending, with a queue for when there's no signal ---- */
+/* ---- sending ---- */
 function post(payload){
   if(!CFG.url) return Promise.reject(new Error('no URL set'));
   payload.pass=CFG.pass;
@@ -1080,41 +1256,40 @@ function post(payload){
   });
 }
 
-function collectRows(){
-  var date=document.getElementById('tsDate').value;
-  var job=document.getElementById('tsJob').value.trim();
-  var rows=[], bad=0;
-  document.querySelectorAll('#tsRows .tsrow').forEach(function(el){
-    var w=el.getAttribute('data-w');
-    var ti=el.querySelector('.ti').value, to=el.querySelector('.to').value;
-    var lu=el.querySelector('.lu').value, nt=el.querySelector('.nt').value.trim();
-    if(!calcShift(date,ti,to,lu)){ bad++; return; }
-    rows.push({date:date,worker:w,job:job,timeIn:ti,timeOut:to,lunch:lu,note:nt});
+function collectAll(){
+  var rows=[];
+  Object.keys(ENTRIES).forEach(function(name){
+    var e=ENTRIES[name]||{};
+    Object.keys(e).sort().forEach(function(k){
+      var r=e[k];
+      if(!r||!r.on) return;
+      if(!calcShift(k,r.ti,r.to,r.lu)) return;
+      rows.push({date:k,worker:name,job:r.job||'',timeIn:r.ti,timeOut:r.to,
+                 lunch:r.lu,note:r.note||''});
+    });
   });
-  return {rows:rows,bad:bad,date:date};
+  return rows;
 }
 
 document.getElementById('tsSend').addEventListener('click',function(){
-  var c=collectRows();
-  if(!c.date){ alert('Pick a date first.'); return; }
-  if(!c.rows.length){ alert(c.bad?'Check the times — none of the rows are complete.':'Pick who worked first.'); return; }
+  var rows=collectAll();
+  if(!rows.length){ alert('Nothing filled in yet for this cycle.'); return; }
+  if(!confirm('Send '+rows.length+' entries for '+cycleLabel(CYCLE)+'?\n\nSending twice will create duplicate rows in the sheet.')) return;
 
   var btn=document.getElementById('tsSend');
   btn.disabled=true; btn.textContent='Sending…';
 
-  post({action:'timesheets',rows:c.rows}).then(function(j){
+  post({action:'timesheets',rows:rows}).then(function(j){
     btn.disabled=false; btn.textContent='Send to sheet';
-    alert(j.written+(j.written===1?' entry':' entries')+' written to the sheet.');
-    TSPICK=[]; document.getElementById('tsRows').innerHTML='';
-    document.getElementById('tsJob').value='';
-    renderPick();
-    flushQueue();
-  }).catch(function(e){
-    queue(c.rows).then(function(){
+    alert(j.written+' entries written to the sheet.');
+    ENTRIES={}; put('cfg',{id:entKey(),data:{}});
+    OPEN=null; renderPeople(); flushQueue();
+  }).catch(function(){
+    queue(rows).then(function(){
       btn.disabled=false; btn.textContent='Send to sheet';
-      alert('No connection — '+c.rows.length+' entries saved on this phone. Open Timesheets again with signal and they will go through.');
-      TSPICK=[]; document.getElementById('tsRows').innerHTML='';
-      renderPick(); renderQueue();
+      alert('No connection — '+rows.length+' entries saved on this phone. Open this again with signal and they will go through.');
+      ENTRIES={}; put('cfg',{id:entKey(),data:{}});
+      OPEN=null; renderPeople(); renderQueue();
     });
   });
 });
@@ -1132,7 +1307,7 @@ function renderQueue(){
     var box=document.getElementById('tsQueue');
     if(!n){ box.innerHTML=''; return; }
     box.innerHTML='<div class="queued"><b>'+n+(n===1?' entry':' entries')+' waiting to send.</b> '+
-      'They will go through automatically next time you open this with signal.</div>';
+      'They go through automatically next time you open this with signal.</div>';
     if(CFG.url&&navigator.onLine) flushQueue();
   }).catch(function(){});
 }

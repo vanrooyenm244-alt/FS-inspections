@@ -92,6 +92,26 @@ workers it found.
 Google, so the script has to accept anonymous requests. The password is the only
 thing in front of it. Treat the URL like a password: don't post it anywhere public.
 
+### Entering a month
+
+The Timesheets screen shows one pay cycle at a time, 25th to 24th. Arrows at the
+top move between cycles.
+
+Tap a worker's name to open their days; tap again to close. **Fill weekdays
+07:00–17:00** stamps the whole cycle in one go, then you change only the days that
+differ. Weekends are shaded and marked — every hour on them is overtime.
+
+Days you don't fill in are simply not sent. Sick days, days off and anything else
+go in the note line next to the job.
+
+Everything is held on the phone as you type, per cycle, so a month can be entered
+over several sittings. Nothing reaches the sheet until **Send to sheet**.
+
+**Sending twice sends everything twice.** The sheet has no way to tell a genuine
+second entry from a duplicate, so it will simply add the rows again. The app clears
+the cycle after a successful send to make this less likely, but if you're unsure
+whether a send went through, check the sheet before pressing it again.
+
 ### How hours are worked out
 
 - Normal day 07:00–17:00, less lunch (30 min default, editable per person)
