@@ -70,27 +70,75 @@ anywhere and it is not backed up. Consequences worth knowing:
 - Nothing syncs between phones. Each phone has its own jobs and its own clause library.
 - Export each job to PDF when you finish it. Treat the PDF as the record, not the app.
 
-## Timesheets — connecting the sheet
+## Accounts and roles
 
-One-time setup, done on a computer:
+Everyone signs in. Accounts live in the **Users** sheet; the script checks
+them on every request. The app hides buttons a role can't use, but hiding is
+only tidiness — the script is what actually enforces it.
+
+**Three roles:**
+
+- **Admin** — everything, plus the Users screen. Sees all workers' hours and is
+  the only one who can change a closed cycle.
+- **Technician** — inspections and timesheets for the whole team.
+- **Worker** — their own hours only, current cycle only.
+
+### First run
+
+1. In `Code.gs`, set `ADMIN_USERNAME` to the username you intend to use.
+2. Run `setup`, then deploy (below).
+3. In the app, tap **Create account** and register with that exact username.
+   You come out as Admin, Active, ready to sign in.
+4. Everyone else registers the same way and lands as **Pending** with no role.
+   Open **Users**, give them a role, then set them Active.
+
+### What a worker can and can't do
+
+- Only their own name appears on the timesheet screen.
+- Only the current pay cycle can be edited. Past cycles are visible but locked.
+  An Admin can still correct a closed cycle.
+- Filing hours under someone else's name is refused by the script, whatever the
+  app appears to allow.
+
+### Edits are traceable
+
+Sending a day that already exists **replaces** the row rather than adding a
+second one, and writes a line to the **Log** sheet with the old and new values
+side by side. So if hours change after the fact, you can see who changed what,
+when, and what it was before.
+
+### An honest limit
+
+The app is public HTML — anyone can read its code. Sign-in decides what a normal
+user sees and does, and the script refuses anything a role isn't allowed. But
+someone technical with valid credentials could craft requests the app itself
+would never send. For a team of five who know each other this is normally fine.
+It is not a system for keeping out a determined outsider.
+
+## Connecting the sheet
+
+One-time setup, on a computer:
 
 1. Open the Google Sheet on the work account.
-2. Extensions → Apps Script. Delete whatever is there, paste in all of `Code.gs`.
-3. Change `SHARED_PASSWORD` at the top to something your team will remember.
-4. Run → pick `setup` → Run. Approve the permission prompts. It builds the
-   Timesheets, Workers and Log tabs and seeds the five names.
+2. Extensions → Apps Script. Delete what's there, paste in all of `Code.gs`.
+3. Set `ADMIN_USERNAME` at the top.
+4. Run → pick `setup` → Run. Approve the prompts. It builds Users, Timesheets,
+   Workers and Log, and seeds the five names.
 5. Deploy → New deployment → Web app.
    - Execute as: **Me**
    - Who has access: **Anyone**
 6. Copy the `/exec` URL.
 
-Then on each phone: open the app → Settings → paste the URL, the password, and
-the name of whoever uses that phone → Save and test. It should report how many
-workers it found.
+On each phone: open the app → **Connection settings** → paste the URL → Save and
+test. Then sign in. The URL is stored per phone; you only do this once.
 
-**"Anyone" sounds alarming but is required** — the phones are not signed into
-Google, so the script has to accept anonymous requests. The password is the only
-thing in front of it. Treat the URL like a password: don't post it anywhere public.
+**"Anyone" sounds alarming but is required** — the phones aren't signed into
+Google, so the script has to accept anonymous requests. The Users sheet is what
+controls access.
+
+**After changing `Code.gs`:** Deploy → Manage deployments → pencil → Version:
+**New version** → Deploy. The URL stays the same. Skip this and the old code
+keeps running.
 
 ### Entering a month
 
@@ -111,6 +159,30 @@ over several sittings. Nothing reaches the sheet until **Send to sheet**.
 second entry from a duplicate, so it will simply add the rows again. The app clears
 the cycle after a successful send to make this less likely, but if you're unsure
 whether a send went through, check the sheet before pressing it again.
+
+### Where the rows land
+
+Every send writes to three places at once:
+
+- **Timesheets** — the master sheet, every row ever sent. Don't delete from here;
+  it's what the other two are built from.
+- **A tab per worker** — created automatically the first time that person's hours
+  come through, and kept sorted by date. A new worker needs nothing set up.
+- **Summary** — one line per worker per pay cycle: days, normal hours, overtime.
+  This is the sheet to look at for payroll.
+
+A **Flagship** menu appears in the sheet's menu bar with three items:
+
+- *Rebuild summary* — recalculates Summary from the master sheet
+- *Rebuild worker tabs* — wipes and rebuilds every worker tab from the master.
+  Use this if a tab ever looks out of step, or after you edit rows by hand.
+- *Check sheets / setup* — same as running `setup`
+
+If the menu isn't there, close and reopen the sheet.
+
+**Editing by hand:** correct the row on the master **Timesheets** sheet, then run
+*Rebuild worker tabs*. Editing a worker tab directly will be overwritten the next
+time that runs.
 
 ### How hours are worked out
 
