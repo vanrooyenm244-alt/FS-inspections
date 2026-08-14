@@ -137,6 +137,9 @@ Admin, Settings shows an **Invite the team** link with a Copy button. Send that
 on WhatsApp. They open it, add it to their home screen, tap Create account, and
 they're done — the link carries the connection for them.
 
+Below the link is a **QR code** — hand them your phone or show your screen and
+they scan it with their camera. Easier than pasting a long link in a storeroom.
+
 That link holds only the address of the script, not a password, and it doesn't
 let anyone in by itself. Every account still waits for you to approve it under
 **Users**.

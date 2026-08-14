@@ -869,12 +869,228 @@ document.getElementById('btnSettings').addEventListener('click',function(){
   show('screenSettings');
 });
 
+
+/* ---- QR code, self-contained so it works with no signal ---- */
+/* Minimal QR encoder — byte mode, ECC level L, versions 1-10.
+   Self-contained so the app keeps working with no signal and depends
+   on no outside service. Returns a matrix of 0/1. */
+function qrMatrix(text){
+  // ---- byte data ----
+  var data=[];
+  for(var i=0;i<text.length;i++){
+    var c=text.charCodeAt(i);
+    if(c<128) data.push(c);
+    else if(c<2048){ data.push(192|(c>>6)); data.push(128|(c&63)); }
+    else { data.push(224|(c>>12)); data.push(128|((c>>6)&63)); data.push(128|(c&63)); }
+  }
+
+  // total data codewords per version at ECC L
+  var CAP=[0,19,34,55,80,108,136,156,194,232,274];
+  // ECC codewords per block, and block layout [numBlocks, eccPerBlock]
+  var ECC=[0,7,10,15,20,26,18,20,24,30,18];
+  var BLOCKS=[0,1,1,1,1,1,2,2,2,2,4];
+
+  var ver=0;
+  for(var v=1;v<=10;v++){
+    var need = data.length + 2 + (v>=10?2:0);   // mode + length bits
+    if(CAP[v] >= need){ ver=v; break; }
+  }
+  if(!ver) return null;
+
+  var size = 17 + ver*4;
+  var lenBits = 8;   // byte mode, versions 1-9
+
+  // ---- bit stream ----
+  var bits=[];
+  function push(val,n){ for(var i=n-1;i>=0;i--) bits.push((val>>i)&1); }
+  push(4,4);                       // byte mode
+  push(data.length, ver<10?8:16);
+  for(var i=0;i<data.length;i++) push(data[i],8);
+
+  var totalData = CAP[ver];
+  var cap = totalData*8;
+  if(bits.length+4<=cap) push(0,4); else while(bits.length<cap) bits.push(0);
+  while(bits.length%8) bits.push(0);
+  var cw=[];
+  for(var i=0;i<bits.length;i+=8){
+    var b=0; for(var j=0;j<8;j++) b=(b<<1)|bits[i+j];
+    cw.push(b);
+  }
+  var pad=[236,17], pi=0;
+  while(cw.length<totalData){ cw.push(pad[pi++%2]); }
+
+  // ---- Reed-Solomon ----
+  var EXP=new Array(512), LOG=new Array(256);
+  (function(){ var x=1; for(var i=0;i<255;i++){ EXP[i]=x; LOG[x]=i; x<<=1; if(x&256) x^=285; }
+    for(var i=255;i<512;i++) EXP[i]=EXP[i-255]; })();
+  function mul(a,b){ return (a===0||b===0)?0:EXP[LOG[a]+LOG[b]]; }
+
+  function rsGen(n){
+    var g=[1];
+    for(var i=0;i<n;i++){
+      var ng=new Array(g.length+1).fill(0);
+      for(var j=0;j<g.length;j++){
+        ng[j]^=g[j];
+        ng[j+1]^=mul(g[j],EXP[i]);
+      }
+      g=ng;
+    }
+    return g;
+  }
+  function rsEnc(block,n){
+    var g=rsGen(n);
+    var res=block.concat(new Array(n).fill(0));
+    for(var i=0;i<block.length;i++){
+      var f=res[i]; if(!f) continue;
+      for(var j=0;j<g.length;j++) res[i+j]^=mul(g[j],f);
+    }
+    return res.slice(block.length);
+  }
+
+  // split into blocks
+  var nb=BLOCKS[ver], eccLen=ECC[ver];
+  var perBlock=Math.floor(totalData/nb), extra=totalData%nb;
+  var dBlocks=[], eBlocks=[], off=0;
+  for(var b=0;b<nb;b++){
+    var len = perBlock + (b >= nb-extra ? 1 : 0);
+    var blk = cw.slice(off, off+len); off+=len;
+    dBlocks.push(blk);
+    eBlocks.push(rsEnc(blk, eccLen));
+  }
+
+  // interleave
+  var out=[];
+  var maxD=Math.max.apply(null,dBlocks.map(function(b){return b.length}));
+  for(var i=0;i<maxD;i++) for(var b=0;b<nb;b++) if(i<dBlocks[b].length) out.push(dBlocks[b][i]);
+  for(var i=0;i<eccLen;i++) for(var b=0;b<nb;b++) out.push(eBlocks[b][i]);
+
+  // ---- matrix ----
+  var m=[], res=[];
+  for(var i=0;i<size;i++){ m.push(new Array(size).fill(null)); res.push(new Array(size).fill(false)); }
+
+  function finder(r,c){
+    for(var i=-1;i<=7;i++) for(var j=-1;j<=7;j++){
+      var rr=r+i, cc=c+j;
+      if(rr<0||cc<0||rr>=size||cc>=size) continue;
+      var on = (i>=0&&i<=6&&(j===0||j===6)) || (j>=0&&j<=6&&(i===0||i===6)) ||
+               (i>=2&&i<=4&&j>=2&&j<=4);
+      m[rr][cc]=on?1:0; res[rr][cc]=true;
+    }
+  }
+  finder(0,0); finder(0,size-7); finder(size-7,0);
+
+  // timing
+  for(var i=8;i<size-8;i++){
+    m[6][i]=(i%2===0)?1:0; res[6][i]=true;
+    m[i][6]=(i%2===0)?1:0; res[i][6]=true;
+  }
+
+  // alignment
+  var AL=[[],[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]];
+  var ap=AL[ver];
+  for(var a=0;a<ap.length;a++) for(var b2=0;b2<ap.length;b2++){
+    var r=ap[a], c=ap[b2];
+    if((r<=7&&c<=7)||(r<=7&&c>=size-8)||(r>=size-8&&c<=7)) continue;
+    for(var i=-2;i<=2;i++) for(var j=-2;j<=2;j++){
+      m[r+i][c+j] = (Math.abs(i)===2||Math.abs(j)===2||(i===0&&j===0))?1:0;
+      res[r+i][c+j]=true;
+    }
+  }
+
+  // dark module + format area reservation
+  m[size-8][8]=1; res[size-8][8]=true;
+  for(var i=0;i<9;i++){ if(!res[8][i]){ res[8][i]=true; m[8][i]=0; }
+                        if(!res[i][8]){ res[i][8]=true; m[i][8]=0; } }
+  for(var i=0;i<8;i++){ if(!res[8][size-1-i]){ res[8][size-1-i]=true; m[8][size-1-i]=0; }
+                        if(!res[size-1-i][8]){ res[size-1-i][8]=true; m[size-1-i][8]=0; } }
+
+  // version info for 7+
+  if(ver>=7){
+    var vd=ver<<12, vv=ver;
+    var VG=0x1F25;
+    var t=vd;
+    for(var i=5;i>=0;i--) if(t&(1<<(i+12))) t^=VG<<i;
+    var vbits=(ver<<12)|t;
+    for(var i=0;i<18;i++){
+      var bit=(vbits>>i)&1;
+      var r=Math.floor(i/3), c=i%3;
+      m[size-11+c][r]=bit; res[size-11+c][r]=true;
+      m[r][size-11+c]=bit; res[r][size-11+c]=true;
+    }
+  }
+
+  // ---- place data, mask 0 ----
+  var bi=0, dir=-1, col=size-1;
+  var stream=[];
+  for(var i=0;i<out.length;i++) for(var j=7;j>=0;j--) stream.push((out[i]>>j)&1);
+
+  var row=size-1;
+  while(col>0){
+    if(col===6) col--;
+    for(var n=0;n<size;n++){
+      for(var k=0;k<2;k++){
+        var c=col-k;
+        if(res[row][c]) continue;
+        var bit = bi<stream.length ? stream[bi++] : 0;
+        if((row+c)%2===0) bit^=1;              // mask pattern 0
+        m[row][c]=bit;
+      }
+      row+=dir;
+      if(row<0||row>=size){ row-=dir; dir=-dir; break; }
+    }
+    col-=2;
+  }
+
+  // ---- format info: ECC L (01), mask 0 ----
+  var fmt=(1<<3)|0;                            // 01 000
+  var f=fmt<<10;
+  for(var i=4;i>=0;i--) if(f&(1<<(i+10))) f^=0x537<<i;
+  var fbits=((fmt<<10)|f)^0x5412;
+
+  for(var i=0;i<=5;i++) m[8][i]=(fbits>>i)&1;
+  m[8][7]=(fbits>>6)&1; m[8][8]=(fbits>>7)&1; m[7][8]=(fbits>>8)&1;
+  for(var i=9;i<15;i++) m[14-i][8]=(fbits>>i)&1;
+
+  for(var i=0;i<8;i++) m[size-1-i][8]=(fbits>>i)&1;
+  for(var i=8;i<15;i++) m[8][size-15+i]=(fbits>>i)&1;
+  m[size-8][8]=1;
+
+  for(var r=0;r<size;r++) for(var c=0;c<size;c++) if(m[r][c]===null) m[r][c]=0;
+  return m;
+}
+
+
 /** Builds a link that carries the script URL, so a new phone needs
  *  nothing pasted — just open, install, sign up. */
 function shareLink(){
   var m=(CFG.url||'').match(/\/macros\/s\/([A-Za-z0-9_-]+)\/exec/);
   if(!m) return '';
   return location.origin+location.pathname+'#s='+m[1];
+}
+
+function qrSvg(text){
+  var m;
+  try { m=qrMatrix(text); } catch(e){ m=null; }
+  if(!m) return '';
+  var n=m.length, q=4, box=n+q*2, parts=[];
+  for(var r=0;r<n;r++){
+    var c=0;
+    while(c<n){
+      if(m[r][c]){
+        var run=1;
+        while(c+run<n && m[r][c+run]) run++;
+        parts.push('<rect x="'+(c+q)+'" y="'+(r+q)+'" width="'+run+'" height="1"/>');
+        c+=run;
+      } else c++;
+    }
+  }
+  return '<div style="text-align:center;margin-top:14px">'+
+    '<svg viewBox="0 0 '+box+' '+box+'" width="230" height="230" '+
+      'style="background:#fff;border:1px solid var(--rule);border-radius:10px;padding:6px" '+
+      'shape-rendering="crispEdges" role="img" aria-label="Scan to install">'+
+      '<rect width="'+box+'" height="'+box+'" fill="#fff"/>'+
+      '<g fill="#111">'+parts.join('')+'</g></svg>'+
+    '<p class="hint" style="margin-top:6px">Or let them scan this with their camera.</p></div>';
 }
 
 function renderShare(){
@@ -889,6 +1105,7 @@ function renderShare(){
     'create an account — nothing to paste. You approve them under Users.</p>'+
     '<div class="block" style="min-height:0;font-size:12.5px;word-break:break-all;background:#F7F9FB">'+esc(link)+'</div>'+
     '<button class="btn ghost" type="button" id="setCopy" style="width:100%;margin-top:9px">Copy link</button>'+
+    qrSvg(link)+
     '<p class="hint" style="margin-top:9px">The link only carries the address of the sheet connection. '+
     'It is not a password and it does not let anyone in on its own.</p>';
   document.getElementById('setCopy').addEventListener('click',function(){
