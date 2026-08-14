@@ -129,8 +129,17 @@ One-time setup, on a computer:
    - Who has access: **Anyone**
 6. Copy the `/exec` URL.
 
-On each phone: open the app → **Connection settings** → paste the URL → Save and
-test. Then sign in. The URL is stored per phone; you only do this once.
+On your own phone: open the app → **Connection settings** → paste the URL → Save
+and test, then sign in.
+
+**For everyone else, don't make them paste anything.** Once you're signed in as
+Admin, Settings shows an **Invite the team** link with a Copy button. Send that
+on WhatsApp. They open it, add it to their home screen, tap Create account, and
+they're done — the link carries the connection for them.
+
+That link holds only the address of the script, not a password, and it doesn't
+let anyone in by itself. Every account still waits for you to approve it under
+**Users**.
 
 **"Anyone" sounds alarming but is required** — the phones aren't signed into
 Google, so the script has to accept anonymous requests. The Users sheet is what
@@ -183,6 +192,14 @@ If the menu isn't there, close and reopen the sheet.
 **Editing by hand:** correct the row on the master **Timesheets** sheet, then run
 *Rebuild worker tabs*. Editing a worker tab directly will be overwritten the next
 time that runs.
+
+### If times show as 12/30/1899
+
+Sheets treats a bare "07:00" as a time value and renders it against its own
+1899 epoch. Times are now written as text so this can't happen, but rows sent
+before that change will still look wrong. Run **Flagship → Repair time columns**
+once; it converts them back to HH:MM and rebuilds the worker tabs. The
+underlying hours were always correct — only the display was off.
 
 ### How hours are worked out
 

@@ -414,6 +414,7 @@ ul.scope li{margin:3px 0;font-size:15px}
     <div id="tsPeople"></div>
     <div class="pick" style="margin-top:14px">
       <button type="button" class="new" id="tsAddWorker">+ New worker</button>
+      <button type="button" class="new" id="tsClearAll" style="color:var(--red);border-color:#EBC7C2">Clear everything</button>
     </div>
   </section>
   <div id="tsQueue"></div>
@@ -431,6 +432,7 @@ ul.scope li{margin:3px 0;font-size:15px}
     </div>
     <button class="btn" id="setTest" type="button" style="width:100%;margin-top:6px">Save and test</button>
     <div id="setResult" style="margin-top:12px"></div>
+    <div id="setShare"></div>
   </section>
 </div>
 
@@ -863,8 +865,41 @@ document.getElementById('btnSettings').addEventListener('click',function(){
   backTo='screenHome';
   document.getElementById('setUrl').value=CFG.url||'';
   document.getElementById('setResult').innerHTML='';
+  renderShare();
   show('screenSettings');
 });
+
+/** Builds a link that carries the script URL, so a new phone needs
+ *  nothing pasted — just open, install, sign up. */
+function shareLink(){
+  var m=(CFG.url||'').match(/\/macros\/s\/([A-Za-z0-9_-]+)\/exec/);
+  if(!m) return '';
+  return location.origin+location.pathname+'#s='+m[1];
+}
+
+function renderShare(){
+  var box=document.getElementById('setShare');
+  if(!box) return;
+  if(!(ME && ME.role==='Admin')){ box.innerHTML=''; return; }
+  var link=shareLink();
+  if(!link){ box.innerHTML=''; return; }
+  box.innerHTML=
+    '<h3 style="margin-top:22px">Invite the team</h3>'+
+    '<p class="hint">Send this link. They open it, add it to their home screen, and '+
+    'create an account — nothing to paste. You approve them under Users.</p>'+
+    '<div class="block" style="min-height:0;font-size:12.5px;word-break:break-all;background:#F7F9FB">'+esc(link)+'</div>'+
+    '<button class="btn ghost" type="button" id="setCopy" style="width:100%;margin-top:9px">Copy link</button>'+
+    '<p class="hint" style="margin-top:9px">The link only carries the address of the sheet connection. '+
+    'It is not a password and it does not let anyone in on its own.</p>';
+  document.getElementById('setCopy').addEventListener('click',function(){
+    var b=document.getElementById('setCopy');
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(link).then(function(){
+        b.textContent='Copied'; setTimeout(function(){ b.textContent='Copy link' },1600);
+      }).catch(function(){ prompt('Copy this link:',link) });
+    } else prompt('Copy this link:',link);
+  });
+}
 document.getElementById('btnPrint').addEventListener('click',function(){ window.print() });
 
 /* add-slot + severity */
@@ -1007,7 +1042,18 @@ var ME=null;            // {username,pass,name,role}
 
 function loadCfg(){
   return get1('cfg','app').then(function(c){ if(c) CFG.url=c.url||''; })
-    .catch(function(){});
+    .catch(function(){})
+    .then(function(){
+      // A setup link carries the script URL, so nobody has to paste it:
+      //   .../FS-inspections/#s=<script id>
+      // Only the deployment id travels in the link, never a password.
+      var m = (location.hash||'').match(/[#&]s=([A-Za-z0-9_-]+)/);
+      if(m){
+        var url='https://script.google.com/macros/s/'+m[1]+'/exec';
+        history.replaceState(null,'',location.pathname+location.search);
+        if(url!==CFG.url){ CFG.url=url; return saveCfg(); }
+      }
+    });
 }
 function saveCfg(){ return put('cfg',{id:'app',url:CFG.url}); }
 
@@ -1027,6 +1073,7 @@ document.getElementById('setTest').addEventListener('click',function(){
     box.innerHTML = j.ok
       ? '<div class="calc">Connected to the sheet.</div>'
       : '<div class="calc bad">Reached it, but it answered: '+esc(j.error||'?')+'</div>';
+    renderShare();
   }).catch(function(e){
     box.innerHTML='<div class="calc bad">Could not reach the sheet: '+esc(String(e.message||e))+
       '<br>Check the URL and that the deployment is set to "Anyone".</div>';
@@ -1521,6 +1568,16 @@ document.getElementById('tsAddWorker').addEventListener('click',function(){
       alert('Added on this phone. It will reach the sheet next time you send with signal.');
     });
   }
+});
+
+document.getElementById('tsClearAll').addEventListener('click',function(){
+  var n=collectAll().length;
+  if(!n){ alert('Nothing filled in for this cycle.'); return; }
+  if(!confirm('Clear all '+n+' entries for '+cycleLabel(CYCLE)+'?\n\nThis only clears what is on this phone. Anything already sent stays in the sheet.')) return;
+  ENTRIES={};
+  put('cfg',{id:entKey(),data:{}});
+  OPEN=null;
+  renderPeople();
 });
 
 /* ---- sending ---- */
