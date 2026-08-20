@@ -1,86 +1,259 @@
-# Flagship Solar — Inspections
+# Flagship Solar Inspections — setup
 
-Static web app. Capture one compliance inspection on site, then export it as a
-PDF report **per discipline** — Electrical, Plumbing, Solar / PV, or Combined.
+Four files make up the app:
 
-Runs entirely in the browser. No server, no build step, no dependencies.
-GitHub Pages serves it as-is.
+- `index.html` — the whole app (logo built in)
+- `manifest.webmanifest` — name and icon for the home screen
+- `sw.js` — makes it work offline
+- `icon-192.png`, `icon-512.png` — home screen icons
 
-## Files to upload (repo root)
+## Getting it onto phones
 
-```
-index.html
-app.css
-app.js
-manifest.webmanifest
-sw.js
-.nojekyll                 <- stops GitHub Pages ignoring files; keep it
-assets/letterhead.png     <- the letterhead printed on every page
-assets/icon-192.png
-assets/icon-512.png
-```
+The app needs to sit on an **https** address. Without https the browser will not
+install it to the home screen and will not run offline. Any of these work and are free:
 
-That is the complete app. Upload all of them, keeping `assets/` as a folder.
+**GitHub Pages** — make a repo, drop the four files in, Settings → Pages → deploy from
+main branch. You get `https://yourname.github.io/reponame/`.
 
-## How the discipline split works
+**Netlify Drop** — go to app.netlify.com/drop and drag the folder in. Live in seconds.
+Needs a computer to drag files.
 
-Two ideas, nothing more:
+**From the phone only (GitHub, no computer needed):** sign up at github.com in Chrome →
+new repository, name it `inspect`, set it **Public** → Add file → Upload files → pick all
+six from Downloads → Settings → Pages → Deploy from a branch, `main`, `/ (root)` → Save.
+A minute later you have `https://yourname.github.io/inspect/`.
 
-1. Every photo and every scope line carries a `disc` string — `"E"`, `"P"`,
-   `"S"`, or any combination. `"EP"` means the item belongs in **both** the
-   electrical and the plumbing report. The earth bonding on the geyser pipework
-   is the real case for this: it is physically at the geyser but it is an
-   electrical finding.
-2. `exportReport(want)` filters on `disc` and renumbers the photos from 1.
+**Your own site** — if flagshipsolar.co.za already has hosting, put the folder in
+something like `/inspect/` and it works at `https://www.flagshipsolar.co.za/inspect/`.
 
-Each export therefore gets its own photo numbering, its own section numbers,
-its own scope of works, and its own sign-off block.
+## Installing on a phone
 
-## Why the sign-off differs per discipline
+**Android (Chrome):** open the address → menu (⋮) → *Add to Home screen* → *Install*.
 
-An electrical CoC is signed by a registered person under the Electrical
-Installation Regulations. A plumbing CoC is signed by a PIRB-registered
-plumber. Different registration, often a different person. Each export asks
-only for the registration that discipline needs; the combined export prints
-both blocks and says so.
+**iPhone (Safari — must be Safari, not Chrome):** open the address → Share button →
+*Add to Home Screen*.
 
-## The letterhead
+After that it opens with its own icon, no browser bar, and works with no signal.
+Open it once on wifi before heading to a job so the offline copy is cached.
 
-`app.css` puts the whole report inside one `<table class="page">` with the
-letterhead in `<thead>`. Browsers repeat `thead` on every printed page **and
-reserve its vertical space**, so the logo can never be painted on top of the
-content.
+## Why it has to be https
 
-Do not replace this with `position: fixed`. That is what the previous version
-did, and it is why the logo landed on top of the text from page 2 onward:
-a fixed element is repainted on each page but nothing holds space for it.
-Chrome's headless print also mis-places fixed elements outright.
+Opening `index.html` straight off the phone (a `file://` or `content://` address) will not
+work properly:
 
-## Exporting on a phone
+- Chrome blocks the local database there, so nothing saves.
+- The service worker will not register, so no offline use.
+- It cannot be added to the home screen.
 
-Tap **Export → Electrical / Plumbing / Combined**, then in Chrome's print
-sheet choose **Save as PDF**. Set *Paper size* to **A4** the first time —
-Chrome remembers it. The suggested filename comes from the job number, so set
-that on the Details tab.
+A `content://` link cannot be made clickable in WhatsApp or anywhere else — it is a private,
+expiring handle Android gives to one app, not a web address. No prefix or symbol changes that.
 
-## Storage
+## A note on the camera on Android
 
-Everything is kept in IndexedDB on the device, saved as you type. Photos are
-downscaled to 1400 px / JPEG 82% on capture.
+Chrome on Android 14 and 15 hides the Camera option when a file input specifies
+`accept` or `capture`. The photo slots therefore use a plain `<input type="file">`
+with neither attribute, which brings the Camera tile back. If a future Chrome
+changes this again, that is the line to look at. Firefox on Android is not affected.
 
-Nothing is uploaded anywhere. That also means **clearing the browser's site
-data deletes the inspections**. Use *Export → Download job as file* after a
-site visit if the job matters; the resulting `.json` restores through *Load
-job from file*.
+## Updating it later
 
-## After you change any file
+Change any file, then **bump the version in `sw.js`** — change `flagship-v1` to
+`flagship-v2`. Phones keep the old copy until that number changes.
 
-Bump `CACHE` in `sw.js` (`fs-inspections-v1` → `-v2`). The service worker
-serves the cached copy first, so without the bump phones keep running the old
-version.
+## Where the data lives
 
-## Adding a discipline later
+Everything is stored in the browser's own database on that phone. It is not sent
+anywhere and it is not backed up. Consequences worth knowing:
 
-Add one entry to `DISCIPLINES` and one to `SECTIONS` in `app.js`. Everything
-else — the export buttons, the filtering, the numbering, the sign-off — is
-generated from those two objects.
+- Photos stay after closing the app or the phone going flat.
+- Uninstalling the app, clearing site data, or "clear browsing data" wipes it.
+- Nothing syncs between phones. Each phone has its own jobs and its own clause library.
+- Export each job to PDF when you finish it. Treat the PDF as the record, not the app.
+
+## Accounts and roles
+
+Everyone signs in. Accounts live in the **Users** sheet; the script checks
+them on every request. The app hides buttons a role can't use, but hiding is
+only tidiness — the script is what actually enforces it.
+
+**Three roles:**
+
+- **Admin** — everything, plus the Users screen. Sees all workers' hours and is
+  the only one who can change a closed cycle.
+- **Technician** — inspections and timesheets for the whole team.
+- **Worker** — their own hours only, current cycle only.
+
+### First run
+
+1. In `Code.gs`, set `ADMIN_USERNAME` to the username you intend to use.
+2. Run `setup`, then deploy (below).
+3. In the app, tap **Create account** and register with that exact username.
+   You come out as Admin, Active, ready to sign in.
+4. Everyone else registers the same way and lands as **Pending** with no role.
+   Open **Users**, give them a role, then set them Active.
+
+### What a worker can and can't do
+
+- Only their own name appears on the timesheet screen.
+- Only the current pay cycle can be edited. Past cycles are visible but locked.
+  An Admin can still correct a closed cycle.
+- Filing hours under someone else's name is refused by the script, whatever the
+  app appears to allow.
+
+### Edits are traceable
+
+Sending a day that already exists **replaces** the row rather than adding a
+second one, and writes a line to the **Log** sheet with the old and new values
+side by side. So if hours change after the fact, you can see who changed what,
+when, and what it was before.
+
+## Prices
+
+A **Prices** tab holds every price the quoting engine uses. Reach it from the
+home screen: Admin can edit, Technicians can look but don't see costs or markup.
+
+Each item carries:
+
+- **Type** — this is the one that matters. `Cost` is a supplier price and markup
+  gets added on top. `Sell` is already what you charge, and markup is *not*
+  applied. Your R5900 switch gear, R450-per-panel structure and labour are all
+  Sell. Africo and ITS lists come in as Cost.
+- **Markup %** — per item, so 15% on small things and 20% on big ones. Leave it
+  blank to use the 20% default.
+- **Install cost** — added to the item but never marked up. The pipes and
+  fittings on a heat pump go here.
+- **Spec** — what the line includes, printed under it on the quote.
+
+`setup` seeds your own fixed prices from QU-0475: both switch gear boards, the
+three roof structure types, installation hardware, the labour tiers, and panel
+cost per watt.
+
+### Bulk updates
+
+The screen is for adding an item or fixing one price. When Africo send a new
+list, open the **Prices** tab in the sheet and paste the cost column straight
+in — that's far quicker than forty taps. The app reads whatever is there next
+time it loads.
+
+### An honest limit
+
+The app is public HTML — anyone can read its code. Sign-in decides what a normal
+user sees and does, and the script refuses anything a role isn't allowed. But
+someone technical with valid credentials could craft requests the app itself
+would never send. For a team of five who know each other this is normally fine.
+It is not a system for keeping out a determined outsider.
+
+## Connecting the sheet
+
+One-time setup, on a computer:
+
+1. Open the Google Sheet on the work account.
+2. Extensions → Apps Script. Delete what's there, paste in all of `Code.gs`.
+3. Set `ADMIN_USERNAME` at the top.
+4. Run → pick `setup` → Run. Approve the prompts. It builds Users, Timesheets,
+   Workers and Log, and seeds the five names.
+5. Deploy → New deployment → Web app.
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+6. Copy the `/exec` URL.
+
+On your own phone: open the app → **Connection settings** → paste the URL → Save
+and test, then sign in.
+
+**For everyone else, don't make them paste anything.** Once you're signed in as
+Admin, Settings shows an **Invite the team** link with a Copy button. Send that
+on WhatsApp. They open it, add it to their home screen, tap Create account, and
+they're done — the link carries the connection for them.
+
+That link holds only the address of the script, not a password, and it doesn't
+let anyone in by itself. Every account still waits for you to approve it under
+**Users**.
+
+**"Anyone" sounds alarming but is required** — the phones aren't signed into
+Google, so the script has to accept anonymous requests. The Users sheet is what
+controls access.
+
+**After changing `Code.gs`:** Deploy → Manage deployments → pencil → Version:
+**New version** → Deploy. The URL stays the same. Skip this and the old code
+keeps running.
+
+### Entering a month
+
+The Timesheets screen shows one pay cycle at a time, 25th to 24th. Arrows at the
+top move between cycles.
+
+Tap a worker's name to open their days; tap again to close. **Fill weekdays
+07:00–17:00** stamps the whole cycle in one go, then you change only the days that
+differ. Weekends are shaded and marked — every hour on them is overtime.
+
+Days you don't fill in are simply not sent. Sick days, days off and anything else
+go in the note line next to the job.
+
+Everything is held on the phone as you type, per cycle, so a month can be entered
+over several sittings. Nothing reaches the sheet until **Send to sheet**.
+
+**Sending twice sends everything twice.** The sheet has no way to tell a genuine
+second entry from a duplicate, so it will simply add the rows again. The app clears
+the cycle after a successful send to make this less likely, but if you're unsure
+whether a send went through, check the sheet before pressing it again.
+
+### Where the rows land
+
+Every send writes to three places at once:
+
+- **Timesheets** — the master sheet, every row ever sent. Don't delete from here;
+  it's what the other two are built from.
+- **A tab per worker** — created automatically the first time that person's hours
+  come through, and kept sorted by date. A new worker needs nothing set up.
+- **Summary** — one line per worker per pay cycle: days, normal hours, overtime.
+  This is the sheet to look at for payroll.
+
+A **Flagship** menu appears in the sheet's menu bar with three items:
+
+- *Rebuild summary* — recalculates Summary from the master sheet
+- *Rebuild worker tabs* — wipes and rebuilds every worker tab from the master.
+  Use this if a tab ever looks out of step, or after you edit rows by hand.
+- *Check sheets / setup* — same as running `setup`
+
+If the menu isn't there, close and reopen the sheet.
+
+**Editing by hand:** correct the row on the master **Timesheets** sheet, then run
+*Rebuild worker tabs*. Editing a worker tab directly will be overwritten the next
+time that runs.
+
+### If times show as 12/30/1899
+
+Sheets treats a bare "07:00" as a time value and renders it against its own
+1899 epoch. Times are now written as text so this can't happen, but rows sent
+before that change will still look wrong. Run **Flagship → Repair time columns**
+once; it converts them back to HH:MM and rebuilds the worker tabs. The
+underlying hours were always correct — only the display was off.
+
+### How hours are worked out
+
+- Normal day 07:00–17:00, less lunch (30 min default, editable per person)
+- Started before 06:00 → those minutes count as overtime
+- Arrived between 06:00 and 07:00 → the real time is recorded, but it counts as
+  normal. People come in early; that isn't overtime.
+- Worked past 17:00 → overtime
+- Saturday and Sunday → every hour is overtime, no normal hours
+
+The app deliberately does **not** apply 1.5x or 2x. It writes a `Day Type` column
+(Weekday / Saturday / Sunday) and leaves the rate maths to a formula in the sheet,
+where you can see it and check it. Getting a pay multiplier wrong inside app code
+is the kind of error nobody notices for months.
+
+### No signal
+
+Hours are queued on the phone if the send fails, and go through automatically next
+time the app is opened with signal. The Timesheets screen shows how many are waiting.
+
+## The clause library
+
+The seeded entries deliberately have **blank clause numbers**. They point you at the
+right standard from plain-language search terms — type "neutral cable too thin" and it
+finds SANS 10142-1, conductor sizing.
+
+Fill the clause number in from your own copy of the standard, once, using *Add your own*
+in the finder. It saves on the phone and is there from then on. Anything you add is
+tagged "yours" and sorts to the top.
