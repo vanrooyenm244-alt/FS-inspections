@@ -100,7 +100,7 @@ function setup() {
 
   var pr = ss.getSheetByName('Prices');
   pr.setColumnWidth(5, 260); pr.setColumnWidth(11, 160);
-  if (pr.getLastRow() < 2) seedPrices_();
+  if (pr.getLastRow() < 2) { seedPrices_(); seedSuppliers_(); }
 
   var s1 = ss.getSheetByName('Sheet1');
   if (s1 && ss.getSheets().length > 1 && s1.getLastRow() === 0) ss.deleteSheet(s1);
@@ -191,11 +191,107 @@ function seedPrices_() {
   log_('system', 'seedPrices', rows.length + ' items', '', '');
 }
 
+/* Supplier lists as uploaded. These are Cost prices — markup is added.
+   Africo: TRADE PRICE column (18% account discount already applied),
+   from the June 2026 list. ITS heat pumps: Dealer's Price, November 2025.
+   Both change often. Update them in the Prices tab or on the app's
+   Prices screen; nothing here needs editing. */
+function seedSuppliers_() {
+  var listDate = new Date();
+  var seed = [
+    ['Inverter', 'Africo', 'SUN-5K-SG01LP-EU', 12320, 'each', 'Cost', '', 0, '', 'Deye - 5Kw Single Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-6K-SG04LP1-EU', 13440, 'each', 'Cost', '', 0, '', 'Deye - 6Kw Single Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-8K-SG01LP1-EU', 17920, 'each', 'Cost', '', 0, '', 'Deye - 8Kw Single Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-10K-SG02LP1-EU-AM3', 23520, 'each', 'Cost', '', 0, '', 'Deye - 10Kw Single Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-12K-1PHASE', 26320, 'each', 'Cost', '', 0, '', 'Deye - 12Kw Single Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-12K-SG04LP3', 26320, 'each', 'Cost', '', 0, '', 'Deye - 12Kw Three Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-15K-SG01LP1-EU', 30800, 'each', 'Cost', '', 0, '', 'Deye - 15kW Three Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-16K-SG01LP1-EU', 33040, 'each', 'Cost', '', 0, '', 'Deye - 16kW Single Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-18-1P', 37520, 'each', 'Cost', '', 0, '', 'Deye - 18kW Single Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'SUN-20K-SG05LP3-EU-SM2', 43120, 'each', 'Cost', '', 0, '', 'Deye - 20kW Three Phase Hybrid Inverter LV'],
+    ['Inverter', 'Africo', 'SUN-20K-SG01HP3-EU', 31360, 'each', 'Cost', '', 0, '', 'Deye - 20kW Three Phase Hybrid Inverter HV'],
+    ['Inverter', 'Africo', 'SUN-30K-SG01HP3-EU', 45920, 'each', 'Cost', '', 0, '', 'Deye - 30kW Three Phase Hybrid Inverter HV'],
+    ['Inverter', 'Africo', 'SUN-50K-SG01HP3-EU', 66080, 'each', 'Cost', '', 0, '', 'Deye - 50kW Three Phase Hybrid Inverter HV'],
+    ['Inverter', 'Africo', 'SUN-80K-SG01HP3-EU', 98560, 'each', 'Cost', '', 0, '', 'Deye - 80kW Three Phase Hybrid Inverter HV'],
+    ['Inverter', 'Africo', 'SUN-125K-SG01HP3-EU', 140000, 'each', 'Cost', '', 0, '', 'Deye - 125kW Three Phase Hybrid Inverter HV'],
+    ['Inverter', 'Africo', 'DEYE-6KW-OG', 6720, 'each', 'Cost', '', 0, '', 'Deye - 6Kw Off Grid inverter IP65'],
+    ['Inverter', 'Africo', 'S6-EH1P6K-L-PLUS', 12305.22, 'each', 'Cost', '', 0, '', 'Solis S6 6kw single phase hybrid inverter'],
+    ['Inverter', 'Africo', 'S6-EH1P8K-L-PLUS', 17767.68, 'each', 'Cost', '', 0, '', 'Solis S6 8kw single phase hybrid inverter'],
+    ['Inverter', 'Africo', 'S6-EH1P10K-L-PLUS(21A)', 21156.80, 'each', 'Cost', '', 0, '', 'Solis S6 10kw single phase hybrid inverter'],
+    ['Inverter', 'Africo', 'S6-EH1P12K03-NV-YD-L', 23050.72, 'each', 'Cost', '', 0, '', 'Solis S6 12kw single phase hybrid inverter'],
+    ['Inverter', 'Africo', 'S6-EH1P16K03-NV-YD-L', 32556.38, 'each', 'Cost', '', 0, '', 'Solis S6 16kw single phase hybrid inverter'],
+    ['Inverter', 'Africo', 'S6-EH3P18K02-NV-YD-L', 31380.16, 'each', 'Cost', '', 0, '', 'Solis S6 18kw three phase hybrid inverter'],
+    ['Inverter', 'Africo', 'S6-EH3P30K-H', 38541.44, 'each', 'Cost', '', 0, '', 'Solis S6 30kw 3Ph Hybrid Inverter'],
+    ['Inverter', 'Africo', 'S6-EH3P50K-H', 58876.61, 'each', 'Cost', '', 0, '', 'Solis S6 50kw 3Ph Hybrid Inverter'],
+    ['Inverter', 'Africo', 'LUX-SNA5000WPV', 5824, 'each', 'Cost', '', 0, '', 'LuxPower - Inverter 5Kw Eco Hybrid / Off Grid'],
+    ['Inverter', 'Africo', 'LUX-SNA6000WPV', 6048, 'each', 'Cost', '', 0, '', 'LuxPower - Inverter 6Kw Eco Hybrid / Off Grid'],
+    ['Inverter', 'Africo', 'LUX-SNA12000WPV-WB', 14560, 'each', 'Cost', '', 0, '', 'LuxPower - Inverter 12Kw Eco Hybrid with breaker'],
+    ['Inverter', 'Africo', 'LUX-LXP6K-LV', 10640, 'each', 'Cost', '', 0, '', 'LuxPower - Inverter 6Kw Hybrid Single Phase'],
+    ['Inverter', 'Africo', 'LUX-LXP-LB10K', 17360, 'each', 'Cost', '', 0, '', 'LuxPower - Inverter 10Kw Hybrid Single Phase'],
+    ['Inverter', 'Africo', 'LUX-GEN2-LB12K', 18480, 'each', 'Cost', '', 0, '', 'LuxPower - Inverter 12Kw Hybrid Single Phase Gen2'],
+    ['Inverter', 'Africo', 'LUX-12-3P-HV', 28000, 'each', 'Cost', '', 0, '', 'LuxPower - Inverter 20Kw Hybrid 3Phase HV'],
+    ['Inverter', 'Africo', 'VOLTA-LV-12', 28560, 'each', 'Cost', '', 0, '', 'Volta - 12kW Single Phase Hybrid Inverter'],
+    ['Inverter', 'Africo', 'VOLTA-LV-15', 34160, 'each', 'Cost', '', 0, '', 'Volta - 15kW Three Phase Hybrid Inverter'],
+    ['Battery', 'Africo', 'DEYE-LV-5.32-SE-G', 12320, 'each', 'Cost', '', 0, '', 'Deye - Battery Lithium Ion SE-G 5.32kWh 51.2V 100Ah'],
+    ['Battery', 'Africo', 'DEYE-SE-F5.1', 11760, 'each', 'Cost', '', 0, '', 'Deye - Battery SE-F 5.12kWh'],
+    ['Battery', 'Africo', 'DEYE-SE-F5.1-PLUS', 12320, 'each', 'Cost', '', 0, '', 'Deye - Battery SE-F PLUS 5.12kWh'],
+    ['Battery', 'Africo', 'DEYE-RW-G/F-10.6', 23520, 'each', 'Cost', '', 0, '', 'Deye - Battery RW-F/G 10,6kWh'],
+    ['Battery', 'Africo', 'DEYE-LV-11,8', 24080, 'each', 'Cost', '', 0, '', 'Deye - Battery Lithium Ion 11,8kWh 51V 208Ah'],
+    ['Battery', 'Africo', 'DEYE-LV-16', 28000, 'each', 'Cost', '', 0, '', 'Deye - Battery Lithium Ion SE-F16 16kWh'],
+    ['Battery', 'Africo', 'DEYE-HV-5.12-BOS-G', 13440, 'each', 'Cost', '', 0, '', 'Deye - Battery High Voltage 5.12kWh BOS-G Pro'],
+    ['Battery', 'Africo', 'DEYE-HV-7.68-BOS-A', 19040, 'each', 'Cost', '', 0, '', 'Deye - Battery High Voltage 7.68kWh BOS-A'],
+    ['Battery', 'Africo', 'DEYE-HV-14,3-BOS-B', 27440, 'each', 'Cost', '', 0, '', 'Deye - Battery High Voltage 14,3kWh BOS-B Single'],
+    ['Battery', 'Africo', 'DYN-DL-2,5', 5992, 'each', 'Cost', '', 0, '', 'Dyness - Battery Lithium Ion DL 2,56kWh'],
+    ['Battery', 'Africo', 'DYN-DL5.0-1C', 11760, 'each', 'Cost', '', 0, '', 'Dyness - Battery Lithium Ion DL5 5.12kWh 10yr'],
+    ['Battery', 'Africo', 'DYN-DL-PRO', 11200, 'each', 'Cost', '', 0, '', 'Dyness - Battery Lithium Ion DL PRO 5.12kWh'],
+    ['Battery', 'Africo', 'DYN-PB-10,2', 22960, 'each', 'Cost', '', 0, '', 'Dyness - Battery Lithium Ion 10,24kWh PowerBox Pro'],
+    ['Battery', 'Africo', 'DYN-PB-14,3', 26880, 'each', 'Cost', '', 0, '', 'Dyness - Battery Lithium Ion 14,3kWh PowerBrick'],
+    ['Battery', 'Africo', 'DYN-PB-16,07', 28000, 'each', 'Cost', '', 0, '', 'Dyness - Battery Lithium Ion 16,076kWh PowerBrick MAX'],
+    ['Battery', 'Africo', 'HINAESS-POWERGEM', 10640, 'each', 'Cost', '', 0, '', 'Hina ESS - Battery Lithium Ion 5.1kWh PowerGem'],
+    ['Battery', 'Africo', 'HINAESS-POWERGEMPLUS', 24080, 'each', 'Cost', '', 0, '', 'Hina ESS - Battery Lithium Ion 14.3kWh PowerGemPlus'],
+    ['Battery', 'Africo', 'VOLTA-S1-2NDGEN', 10976, 'each', 'Cost', '', 0, '', 'Volta - Battery Lithium Ion 5.1kW 48V 100Ah Stage 1 2nd Gen'],
+    ['Battery', 'Africo', 'VOLTA-S3-2NDGEN', 20160, 'each', 'Cost', '', 0, '', 'Volta - Battery Lithium Ion 10.2kW 48V 200Ah Stage 3 2nd Gen'],
+    ['Battery', 'Africo', 'VOLTA-S4-2NDGEN', 24640, 'each', 'Cost', '', 0, '', 'Volta - Battery Lithium Ion 14.3kW 51.2V 200Ah Stage 4 2nd Gen'],
+    ['Battery', 'Africo', 'SDA10-48100', 10080, 'each', 'Cost', '', 0, '', 'Shoto - Battery Lithium Ion 5.1kW 48V 100Ah'],
+    ['Battery', 'Africo', 'SHOTO-16', 22400, 'each', 'Cost', '', 0, '', 'Shoto - Battery Lithium Ion 16,07kW'],
+    ['Battery', 'Africo', 'SMDSS4143', 44788.80, 'each', 'Cost', '', 0, '', 'Solar MD - Battery Lithium Ion 14.3kWh 51.2V'],
+    ['Heat pump', 'ITS', 'ITS-3.6HD', 10810, 'each', 'Cost', '', 15000, 'Includes pipes, fittings and installation', 'ITS-3.6HD 3.6kW domestic heat pump'],
+    ['Heat pump', 'ITS', 'ITS-4.5HDsuper', 12595, 'each', 'Cost', '', 15000, 'Includes pipes, fittings and installation', 'ITS-4.5HDsuper 4.5kW high temp domestic heat pump'],
+    ['Heat pump', 'ITS', 'ITS-5.4HD', 12070, 'each', 'Cost', '', 15000, 'Includes pipes, fittings and installation', 'ITS-5.4HD 5.4kW domestic heat pump'],
+    ['Heat pump', 'ITS', 'ITS-6.3HDsuper', 14233, 'each', 'Cost', '', 15000, 'Includes pipes, fittings and installation', 'ITS-6.3HDsuper 6.3kW high temp domestic heat pump'],
+    ['Heat pump', 'ITS', 'ITS-7.6HD', 13750, 'each', 'Cost', '', 15000, 'Includes pipes, fittings and installation', 'ITS-7.6HD 7.6kW domestic heat pump'],
+    ['Heat pump', 'ITS', 'ITS-11HD', 18895, 'each', 'Cost', '', 0, '', 'ITS-11HD 11kW heat pump 1 Phase'],
+    ['Heat pump', 'ITS', 'ITS-22HD3', 28345, 'each', 'Cost', '', 0, '', 'ITS-22HD3 22kW heat pump 3 Phase'],
+    ['Heat pump', 'ITS', 'ITS-50VD3pro', 88195, 'each', 'Cost', '', 0, '', 'ITS-50VD3pro 50kW heat pump 3 Phase'],
+  ];
+  var rows = seed.map(function (s) {
+    // [category, supplier, code, cost, unit, type, markup, install, spec, description]
+    return [priceId_(), s[0], s[1], s[2], s[9], s[4], s[3], s[5], s[6], s[7], s[8], 'Yes', listDate];
+  });
+  sheet_('Prices').getRange(sheet_('Prices').getLastRow() + 1, 1, rows.length, 13).setValues(rows);
+  log_('system', 'seedSuppliers', rows.length + ' items', '', '');
+  return rows.length;
+}
+
+/** Wipes Africo and ITS rows and re-seeds them from the built-in lists.
+ *  Your own prices, markups and any items you added are left alone. */
+function reloadSuppliers() {
+  var sh = sheet_('Prices');
+  var all = priceRows_();
+  var kill = all.filter(function (p) {
+    return p.supplier === 'Africo' || p.supplier === 'ITS';
+  }).map(function (p) { return p.row; }).sort(function (a, b) { return b - a; });
+  kill.forEach(function (r) { sh.deleteRow(r); });
+  var n = seedSuppliers_();
+  return 'Removed ' + kill.length + ', loaded ' + n + '.';
+}
+
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Flagship')
     .addItem('Rebuild summary', 'rebuildSummary')
     .addItem('Rebuild worker tabs', 'rebuildWorkerTabs')
     .addItem('Repair time columns', 'fixExistingTimes')
+    .addItem('Reload supplier price lists', 'reloadSuppliers')
     .addSeparator()
     .addItem('Check sheets / setup', 'setup')
     .addToUi();

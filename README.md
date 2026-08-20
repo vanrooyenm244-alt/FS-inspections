@@ -128,6 +128,20 @@ Each item carries:
 three roof structure types, installation hardware, the labour tiers, and panel
 cost per watt.
 
+### What's already in there
+
+`setup` loads two supplier lists as **Cost** items, from the PDFs as supplied:
+
+- **Africo** — 56 inverters and batteries, TRADE PRICE column (your 18% account
+  discount already applied), June 2026 list
+- **ITS** — 8 heat pumps, Dealer's Price, November 2025 list. The five domestic
+  models carry a R15 000 install cost for pipes and fittings; adjust per job.
+
+Both go stale. **Flagship → Reload supplier price lists** wipes only the Africo
+and ITS rows and reloads them from the built-in copy — your own prices, your
+markups and anything you added are untouched. But that reloads the *same* old
+figures, so for genuinely new pricing, edit the sheet or the app.
+
 ### Bulk updates
 
 The screen is for adding an item or fixing one price. When Africo send a new
