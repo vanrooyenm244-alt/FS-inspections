@@ -1,15 +1,16 @@
 {
-  "name": "Flagship Solar Inspections",
-  "short_name": "Flagship",
-  "description": "Pre-compliance inspection capture — photos, findings and SANS clause lookup, offline.",
-  "start_url": "./index.html",
+  "name": "Flagship Solar — Inspections",
+  "short_name": "FS Inspections",
+  "description": "Capture a compliance inspection on site and export it per discipline as a PDF report.",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1B2430",
-  "theme_color": "#1F4E79",
+  "background_color": "#f4f6f9",
+  "theme_color": "#0b4f9e",
   "icons": [
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

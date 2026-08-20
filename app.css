@@ -1,0 +1,287 @@
+/* ══════════════════════════════════════════════════════════════
+   Flagship Solar — Inspections
+   SCREEN styles first, PRINT styles at the bottom.
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  --blue:   #0b4f9e;
+  --blue-2: #eef3f9;
+  --red:    #c0392b;
+  --green:  #2b7a4b;
+  --ink:    #1c2430;
+  --muted:  #5b6775;
+  --line:   #d6dde5;
+  --bg:     #f4f6f9;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0; padding: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  font-size: 16px;
+}
+
+/* ── top bar ── */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 8px 12px;
+  padding-top: calc(8px + env(safe-area-inset-top));
+  background: #fff; border-bottom: 2px solid var(--blue);
+}
+.topbar-logo { height: 34px; width: auto; display: block; }
+
+.ghost-btn {
+  border: 1px solid var(--blue); background: #fff; color: var(--blue);
+  font: inherit; font-size: 14px; font-weight: 600;
+  padding: 8px 14px; border-radius: 8px; cursor: pointer;
+}
+
+/* ── tabs ── */
+.tabs {
+  position: sticky; top: 52px; z-index: 19;
+  display: flex; background: #fff; border-bottom: 1px solid var(--line);
+}
+.tab {
+  flex: 1; border: 0; background: none; font: inherit; font-size: 14px;
+  font-weight: 600; color: var(--muted); padding: 12px 4px;
+  border-bottom: 3px solid transparent; cursor: pointer;
+}
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+main { padding: 16px 12px 96px; max-width: 820px; margin: 0 auto; }
+.pane { display: none; }
+.pane.active { display: block; }
+
+h2 {
+  font-size: 15px; color: var(--blue); margin: 22px 0 10px;
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+h2:first-child { margin-top: 0; }
+.hint { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+label {
+  display: block; margin-bottom: 12px;
+  font-size: 13px; font-weight: 600; color: var(--blue);
+}
+label.check { display: flex; align-items: center; gap: 8px; font-weight: 400; color: var(--ink); }
+input[type=text], input[type=date], textarea {
+  display: block; width: 100%; margin-top: 5px;
+  font: inherit; font-size: 16px; font-weight: 400; color: var(--ink);
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+  background: #fff;
+}
+textarea { resize: vertical; }
+input:focus, textarea:focus { outline: 2px solid var(--blue); outline-offset: -1px; }
+
+/* ── photo sections ── */
+.section { margin-bottom: 26px; }
+.section > h3 {
+  font-size: 14px; color: var(--blue); margin: 0 0 4px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--blue);
+}
+.section-sub { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+
+.blocks { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 620px) { .blocks { grid-template-columns: 1fr 1fr; } }
+
+.block {
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  overflow: hidden;
+}
+.block-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 8px 10px; background: var(--blue-2);
+  border-bottom: 1px solid var(--line);
+}
+.block-no { font-size: 13px; font-weight: 700; color: var(--blue); }
+.block-thumb {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block;
+  background: #e9edf2;
+}
+.block-body { padding: 10px; }
+.block-body textarea { margin: 0 0 8px; font-size: 15px; }
+.block-body input[type=text] { margin: 0 0 8px; font-size: 14px; }
+
+.discpick { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.discpick button {
+  flex: 1; border: 0; background: #fff; font: inherit; font-size: 12px;
+  font-weight: 600; color: var(--muted); padding: 7px 2px; cursor: pointer;
+  border-right: 1px solid var(--line);
+}
+.discpick button:last-child { border-right: 0; }
+.discpick button.on { background: var(--blue); color: #fff; }
+
+.icon-btn {
+  border: 0; background: none; font: inherit; font-size: 18px;
+  color: var(--muted); cursor: pointer; padding: 2px 6px; line-height: 1;
+}
+.icon-btn.danger { color: var(--red); }
+
+.addrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
+.add-btn {
+  flex: 1 1 auto; min-width: 130px;
+  border: 1px dashed var(--blue); background: #fff; color: var(--blue);
+  font: inherit; font-size: 14px; font-weight: 600;
+  padding: 12px 14px; border-radius: 8px; cursor: pointer;
+}
+.add-btn.primary { border-style: solid; background: var(--blue); color: #fff; }
+
+/* ── scope items ── */
+.itemlist { display: flex; flex-direction: column; gap: 8px; }
+.item {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+}
+.item .tag {
+  flex: 0 0 auto; font-size: 11px; font-weight: 700; color: #fff;
+  background: var(--blue); border-radius: 4px; padding: 3px 6px; margin-top: 4px;
+}
+.item .tag.P { background: #1c7ea8; }
+.item .tag.S { background: #b8860b; }
+.item textarea { margin: 0; border: 0; padding: 4px 0; font-size: 15px; }
+.item textarea:focus { outline: 0; }
+
+/* ── export ── */
+.exportgrid { display: flex; flex-direction: column; gap: 10px; }
+.export-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid var(--blue); background: var(--blue); color: #fff;
+  font: inherit; font-size: 15px; font-weight: 600;
+  padding: 14px 16px; border-radius: 10px; cursor: pointer; text-align: left;
+}
+.export-btn .count { font-size: 12px; font-weight: 400; opacity: .85; }
+.export-btn.empty { background: #fff; color: var(--muted); border-color: var(--line); }
+
+/* ── job list ── */
+.overlay {
+  position: fixed; inset: 0; z-index: 40; background: rgba(20,30,40,.5);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+/* [hidden] alone loses to display:flex — this is what actually hides it */
+.overlay[hidden], .toast[hidden] { display: none; }
+.sheet {
+  background: var(--bg); width: 100%; max-width: 820px;
+  max-height: 85vh; overflow: auto;
+  border-radius: 14px 14px 0 0; padding: 18px 14px calc(18px + env(safe-area-inset-bottom));
+}
+.jobrow {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px; margin-bottom: 8px;
+}
+.jobrow .meta { flex: 1; min-width: 0; }
+.jobrow .t { font-size: 15px; font-weight: 600; }
+.jobrow .s { font-size: 12px; color: var(--muted); }
+.jobrow.current { border-color: var(--blue); border-width: 2px; }
+
+/* ── toast ── */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  z-index: 60; background: var(--ink); color: #fff;
+  font-size: 14px; padding: 10px 16px; border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
+
+/* the report only exists for printing */
+#report { display: none; }
+
+/* ══════════════════════════════════════════════════════════════
+   PRINT — this is the report
+   ══════════════════════════════════════════════════════════════ */
+@media print {
+
+  /* A4, not Letter. */
+  @page { size: A4; margin: 10mm 13mm 8mm 13mm; }
+
+  html, body { background: #fff; margin: 0; padding: 0; }
+  #app, #joblist { display: none !important; }
+  #report { display: block !important; }
+
+  body {
+    font-size: 9.4pt; line-height: 1.45; color: #1c2430;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  /* ── THE LETTERHEAD FIX ────────────────────────────────────
+     The whole report lives in ONE table. <thead> repeats on every
+     printed page AND reserves its own vertical space, so the logo
+     can never be painted on top of the content. Do not replace this
+     with position:fixed — Chrome mis-places fixed elements in print. */
+  table.page { width: 100%; border-collapse: collapse; }
+  table.page > thead > tr > th,
+  table.page > tfoot > tr > td,
+  table.page > tbody > tr > td { padding: 0; text-align: left; font-weight: normal; }
+
+  .letterhead {
+    height: 20mm; padding-bottom: 2.5mm; margin-bottom: 5mm;
+    border-bottom: 1.2pt solid #0b4f9e;
+  }
+  .letterhead img { height: 17mm; width: auto; display: block; }
+
+  .runfoot {
+    height: 7mm; margin-top: 4mm; padding-top: 1.6mm;
+    font-size: 7pt; color: #5b6775; text-align: center;
+    border-top: .6pt solid #d6dde5;
+  }
+
+  #report h1 { font-size: 17pt; color: #0b4f9e; margin: 0 0 1mm; letter-spacing: -.2px; }
+  #report .subtitle { font-size: 10pt; color: #c0392b; font-weight: 700; margin: 0 0 6mm; }
+  #report h2 {
+    font-size: 12.5pt; color: #0b4f9e; margin: 9mm 0 3mm; padding-bottom: 1.5mm;
+    border-bottom: 1pt solid #0b4f9e; display: block;
+    break-after: avoid; page-break-after: avoid;
+  }
+  #report h3 {
+    font-size: 10.2pt; color: #0b4f9e; margin: 6mm 0 2.5mm;
+    break-after: avoid; page-break-after: avoid;
+  }
+
+  #report table.kv {
+    width: 100%; border-collapse: collapse; margin-bottom: 6mm;
+    break-inside: avoid; page-break-inside: avoid;   /* sign-off must not split */
+  }
+  #report table.kv th {
+    text-align: left; font-weight: 600; color: #0b4f9e; width: 50mm;
+    padding: 2.2mm 0; border-bottom: .6pt solid #dde3ea; vertical-align: top;
+  }
+  #report table.kv td { padding: 2.2mm 0; border-bottom: .6pt solid #dde3ea; }
+
+  #report .note {
+    background: #f4f7fb; border-left: 2.5pt solid #0b4f9e; padding: 3.5mm 4mm;
+    font-size: 8.6pt; font-style: italic; color: #34414f; margin: 0 0 4mm;
+  }
+  #report .note b { font-style: normal; }
+  #report .note2 { font-size: 8.6pt; color: #34414f; margin: 0 0 4mm; }
+
+  /* photo grid — rows never split across a page break */
+  #report .row {
+    display: flex; gap: 4mm; margin-bottom: 4mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  #report .cell {
+    flex: 1 1 0; min-width: 0; margin: 0; border: .7pt solid #c9d3dd;
+    border-radius: 2px; overflow: hidden; display: flex; flex-direction: column;
+  }
+  #report .cell.ghost { border: none; }
+  #report .cellhead {
+    background: #eef3f9; color: #0b4f9e; font-weight: 700; font-size: 8.6pt;
+    text-align: center; padding: 1.6mm 0; border-bottom: .7pt solid #c9d3dd;
+  }
+  #report .imgwrap {
+    height: 58mm; display: flex; align-items: center; justify-content: center;
+    background: #fff; padding: 2mm;
+  }
+  #report .imgwrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  #report .cap { padding: 2.2mm 3mm 1mm; font-size: 8.4pt; flex: 1 1 auto; }
+  #report .cap.todo { color: #c0392b; font-style: italic; }
+  #report .sans { padding: 0 3mm 2.4mm; font-size: 7.8pt; font-style: italic; color: #0b4f9e; }
+
+  #report ol, #report ul { margin: 0 0 4mm; padding-left: 6mm; }
+  #report li { margin-bottom: 1.4mm; }
+  #report .compliant { font-size: 8.8pt; color: #2b7a4b; margin: 0 0 4mm; }
+  #report .compliant ul { margin: 1mm 0 0; }
+}
